@@ -4,6 +4,7 @@ import time
 import progressbar
 from bs4 import BeautifulSoup
 from lxml import html
+import re
 
 __target_user_id = 48488
 __url_pre = "http://forum.anidub.com/topic/"
@@ -16,7 +17,7 @@ __user_password = "635241ml"
 __login_url = "http://forum.anidub.com/index.php?app=core&module=global&section=login&do=process"
 __login_data = {
 	"auth_key" : "880ea6a14ea49e853634fbdc5015a024",
-	"referer" : "http://forum.anidub.com/",
+	"referer" : __url_pre,
 	"ips_username" : __user_name,
 	"ips_password" : __user_password,
 	"rememberMe" : "1"
@@ -29,7 +30,7 @@ def read_url_list():
 		line = line[:-1] if line[-1] == "\n" else line
 		url_list.append(line)
 	tread_list.close()
-	url_list.sort()
+	# url_list.sort()
 	url_list = tuple(url_list)
 	return url_list
 
@@ -37,6 +38,10 @@ def auth(a_url, a_data):
 	s = requests.Session()
 	s.post(a_url, a_data)
 	return s
+
+def rate(session, post_id):
+	pass
+
 
 url_list = read_url_list()
 auth_session = auth(__login_url, __login_data)
@@ -59,6 +64,15 @@ for I in range(0, len(url_list)):
 			break
 
 		# Искать id
+		post_list = posts.find_all("div", {"class", "post_block"})
+		for item in post_list:
+			author_id = item.find("span", {"class" : "author"}).find("a").get("hovercard-id")
+			if int(author_id) == __target_user_id:
+				post_id = item.get("id")
+				post_id = re.sub(r"post_id_", "", post_id)
+				data_base.append(post_id)
+				# rate(session, post_id)
+
 
 		buff = posts
 		time.sleep(0.05)
@@ -67,3 +81,6 @@ for I in range(0, len(url_list)):
 	print("\nГотово!", I, "\n")
 	del bar
 
+# Выделить обход в отдельную функцию search(url_list)
+# Убрать авторизацию из обхода: она нужна только для оценивания
+# Если url_list не задан, обходить весь форум.
