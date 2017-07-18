@@ -5,8 +5,10 @@ import progressbar
 from bs4 import BeautifulSoup
 from lxml import html
 import re
+import sys
 from fake_useragent import UserAgent
 
+sys.setrecursionlimit(10000)
 ua = UserAgent()
 __target_user_id = 48488
 __url_root = "http://forum.anidub.com/"
@@ -53,7 +55,6 @@ auth_session = auth(__login_url, __login_data)
 data_base = []
 
 # rate(auth_session, 997493)
-exit()
 
 for I in range(0, len(url_list)):
 	buff = ""
@@ -73,15 +74,23 @@ for I in range(0, len(url_list)):
 			break
 
 		# Искать id
-		post_list = posts.find_all("div", {"class", "post_block"})
+		post_list = posts.find_all("div", {"class": "post_block"})
+		listn = 1
 		for item in post_list:
-			author_id = item.find("span", {"class" : "author"}).find("a").get("hovercard-id")
-			if int(author_id) == __target_user_id:
-				coutner += 1
-				post_id = item.get("id")
-				post_id = re.sub(r"post_id_", "", post_id)
-				data_base.append(post_id)
-				# rate(auth_session, post_id)
+			try:
+				if item.find("h3", {"class" : "guest"}):
+					continue
+				author_id = item.find("span", {"class" : "author"}).find("a").get("hovercard-id")
+				if int(author_id) == __target_user_id:
+					coutner += 1
+					post_id = item.get("id")
+					post_id = re.sub(r"post_id_", "", post_id)
+					data_base.append(post_id)
+					# rate(auth_session, post_id)
+			except:
+				print("Fail!", "Error in thread '%s' list '%d' count '%d'." % (url_list[I], listn, coutner))
+			finally:
+				listn += 1
 
 
 		buff = posts
@@ -92,6 +101,11 @@ for I in range(0, len(url_list)):
 	del bar
 
 print(data_base)
+with open("results.txt", "w") as db:
+	for item in data_base:
+		db.write("%s\n" % item)
+	db.close()
+
 
 # Выделить обход в отдельную функцию search(url_list)
 # Убрать авторизацию из обхода: она нужна только для оценивания
