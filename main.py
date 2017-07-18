@@ -7,7 +7,9 @@ from lxml import html
 import re
 
 __target_user_id = 48488
-__url_pre = "http://forum.anidub.com/topic/"
+__url_root = "http://forum.anidub.com/"
+__rate_system_url = __url_root + "index.php?app=core&module=global&section=reputation&do=add_rating&app_rate=forums&type=pid&type_id=%d&rating=-1&secure_key=d86c744b27aa9b773279220e4185db34"
+__url_pre = __url_root + "topic/"
 __url_post = "/page__st__%d"
 __headers = {
 	"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
@@ -17,7 +19,7 @@ __user_password = "635241ml"
 __login_url = "http://forum.anidub.com/index.php?app=core&module=global&section=login&do=process"
 __login_data = {
 	"auth_key" : "880ea6a14ea49e853634fbdc5015a024",
-	"referer" : __url_pre,
+	"referer" : __url_root,
 	"ips_username" : __user_name,
 	"ips_password" : __user_password,
 	"rememberMe" : "1"
@@ -40,7 +42,7 @@ def auth(a_url, a_data):
 	return s
 
 def rate(session, post_id):
-	pass
+	session.post(__rate_system_url % (int(post_id)))
 
 
 url_list = read_url_list()
@@ -71,7 +73,7 @@ for I in range(0, len(url_list)):
 				post_id = item.get("id")
 				post_id = re.sub(r"post_id_", "", post_id)
 				data_base.append(post_id)
-				# rate(session, post_id)
+				rate(auth_session, post_id)
 
 
 		buff = posts
