@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-import requests
-import time
 import progressbar
-from bs4 import BeautifulSoup
-from lxml import html
 import re
+import requests
 import sys
+import time
+
+from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from lxml import html
 
 sys.setrecursionlimit(10000)
 ua = UserAgent()
@@ -27,6 +28,13 @@ __login_data = {
 	"ips_password" : __user_password,
 	"rememberMe" : "1"
 }
+
+def save_db(data_base):
+	with open("results.txt", "a") as db:
+		for item in data_base:
+			db.write("%s\n" % item)
+		db.close()
+
 
 def read_url_list():
 	tread_list = open("data.txt", "r")
@@ -59,16 +67,18 @@ data_base = []
 for I in range(0, len(url_list)):
 	buff = ""
 	str_numb = 1
+	coutner = 0
+	common_url_template = __url_pre + url_list[I] + __url_post
+
 	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
 	print("Рабоатем с", url_list[I])
 	bar.update(0)
-	common_url_template = __url_pre + url_list[I] + __url_post
-	coutner = 0
+
 	while True:
 		common_url = common_url_template % (20 * (str_numb - 1))
 		response = requests.get(common_url, headers=__headers)
-
 		soup = BeautifulSoup(response.text, "lxml")
+
 		posts = soup.find("div", {"id" : "ips_Posts"})
 		if posts == buff:
 			break
@@ -92,19 +102,15 @@ for I in range(0, len(url_list)):
 			finally:
 				listn += 1
 
-
 		buff = posts
-		time.sleep(0.05)
+		# time.sleep(0.05)
 		bar.update(str_numb)
 		str_numb += 1
+	save_db(data_base)
+	data_base = []
 	print("\nГотово!", coutner, "\n")
 	del bar
 
-print(data_base)
-with open("results.txt", "w") as db:
-	for item in data_base:
-		db.write("%s\n" % item)
-	db.close()
 
 
 # Выделить обход в отдельную функцию search(url_list)
