@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 import requests
+import time
+import progressbar
+from bs4 import BeautifulSoup
+from lxml import html
 
+__target_user_id = 48488
 __url_pre = "http://forum.anidub.com/topic/"
 __url_post = "/page__st__%d"
 __headers = {
@@ -27,12 +32,32 @@ with open("data.txt") as tread_list:
 
 url_list = tuple(url_list)
 
-N = 25
-common_url = url_list[0] % (20 * (N - 1))
-with requests.Session() as s:
-	s.post(__login_url, __login_data)
-	global r
-	r = s.get(common_url, headers=__headers)
+# Авторизация
+s = requests.Session()
+s.post(__login_url, __login_data)
 
-with open("test.html", "w") as output:
-	output.write(r.text)
+
+data_base = []
+
+buff = ""
+str_numb = 1
+bar = bar2 = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
+while True:
+	common_url = url_list[0] % (20 * (str_numb - 1))
+	response = s.get(common_url, headers=__headers)
+
+	if response.text == buff:
+		print("Кончилось!!")
+		break
+	# Искать id
+	with open("tests/" + str(str_numb) + "-resp.html", "w") as out:
+		out.write(response.text)
+		out.close()
+	with open("tests/" + str(str_numb) + "-buff.html", "w") as out:
+		out.write(buff)
+		out.close()
+	buff = response.text
+	str_numb += 1
+	time.sleep(0.05)
+	bar.update(str_numb)
+del bar
