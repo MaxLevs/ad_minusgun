@@ -22,42 +22,48 @@ __login_data = {
 	"rememberMe" : "1"
 }
 
-with open("data.txt") as tread_list:
-	global url_list
+def read_url_list():
+	tread_list = open("data.txt", "r")
 	url_list = []
 	for line in tread_list:
-		buff = line[:-1] if line[-1] == "\n" else line
-		url_list.append(__url_pre + buff + __url_post)
+		line = line[:-1] if line[-1] == "\n" else line
+		url_list.append(line)
 	tread_list.close()
+	url_list.sort()
+	url_list = tuple(url_list)
+	return url_list
 
-url_list = tuple(url_list)
+def auth(a_url, a_data):
+	s = requests.Session()
+	s.post(a_url, a_data)
+	return s
 
-# Авторизация
-s = requests.Session()
-s.post(__login_url, __login_data)
-
-
+url_list = read_url_list()
+auth_session = auth(__login_url, __login_data)
 data_base = []
 
-buff = ""
-str_numb = 1
-bar = bar2 = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
-while True:
-	common_url = url_list[0] % (20 * (str_numb - 1))
-	response = s.get(common_url, headers=__headers)
+for I in range(0, len(url_list)):
+	buff = ""
+	str_numb = 1
+	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
+	print("Рабоатем с", url_list[I])
+	bar.update(0)
+	common_url_template = __url_pre + url_list[I] + __url_post
+	while True:
+		common_url = common_url_template % (20 * (str_numb - 1))
+		response = auth_session.get(common_url, headers=__headers)
 
-	if response.text == buff:
-		print("Кончилось!!")
-		break
-	# Искать id
-	with open("tests/" + str(str_numb) + "-resp.html", "w") as out:
-		out.write(response.text)
-		out.close()
-	with open("tests/" + str(str_numb) + "-buff.html", "w") as out:
-		out.write(buff)
-		out.close()
-	buff = response.text
-	str_numb += 1
-	time.sleep(0.05)
-	bar.update(str_numb)
-del bar
+		soup = BeautifulSoup(response.text, "lxml")
+		posts = soup.find("div", {"id" : "ips_Posts"})
+		if posts == buff:
+			break
+
+		# Искать id
+
+		buff = posts
+		time.sleep(0.05)
+		bar.update(str_numb)
+		str_numb += 1
+	print("\nГотово!", I, "\n")
+	del bar
+
