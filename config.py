@@ -12,8 +12,13 @@ __path_to_script = path.abspath(__path_to_script)
 sys.setrecursionlimit(10000)
 ua = UserAgent()
 cp = configparser.ConfigParser()
-auth_data = cp.read(__path_to_script + "/auth.conf")
-config = cp.read(__path_to_script + "/config.conf")
+
+__config_dir = "/config"
+__input_dir = "/input"
+__output_dir = "/output"
+
+auth_data = cp.read(__path_to_script + __config_dir + "/auth.conf")
+config = cp.read(__path_to_script + __config_dir + "/config.conf")
 # Если не существуют, бросить exaption
 
 __url_root = cp.get("URL", "Root")

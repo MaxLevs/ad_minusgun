@@ -12,14 +12,14 @@ from lxml import html
 config.__target_user_id = 48488
 
 def save_db(data_base):
-	with open("results.txt", "a") as db:
+	with open(__output_dir + "results.txt", "a") as db:
 		for item in data_base:
 			db.write("%s\n" % item)
 		db.close()
 
 
 def read_url_list():
-	tread_list = open("data.txt", "r")
+	tread_list = open(__input_dir + "data.txt", "r")
 	url_list = []
 	for line in tread_list:
 		line = line[:-1] if line[-1] == "\n" else line
