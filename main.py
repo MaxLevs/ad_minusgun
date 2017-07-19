@@ -6,8 +6,8 @@ import sys
 import time
 
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from lxml import html
+from fake_useragent import UserAgent
 
 sys.setrecursionlimit(10000)
 ua = UserAgent()
@@ -55,14 +55,16 @@ def auth(a_url, a_data):
 
 def rate(session, post_id):
 	res = session.get(__rate_system_url % (int(post_id)), headers=__headers)
-	print(res.status_code) # Временно
+	# print(res.status_code) # Временно
+	return res
 
 
 url_list = read_url_list()
 auth_session = auth(__login_url, __login_data)
 data_base = []
 
-# rate(auth_session, 997493)
+# rate(auth_session, 1153978)
+# exit()
 
 for I in range(0, len(url_list)):
 	buff = ""
@@ -103,7 +105,7 @@ for I in range(0, len(url_list)):
 				listn += 1
 
 		buff = posts
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		bar.update(str_numb)
 		str_numb += 1
 	save_db(data_base)
@@ -119,3 +121,5 @@ for I in range(0, len(url_list)):
 
 # Доработать условие прекращение обхода треда
 # Придумать, как обойти ограничение на кол-во минусов в день
+
+# Добавить автореконнект при ошибке соединения.
