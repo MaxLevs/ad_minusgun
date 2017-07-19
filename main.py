@@ -1,33 +1,15 @@
 #!/usr/bin/env python
+import config
+
 import progressbar
 import re
 import requests
-import sys
 import time
 
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from lxml import html
 
-sys.setrecursionlimit(10000)
-ua = UserAgent()
-__target_user_id = 48488
-__url_root = "http://forum.anidub.com/"
-__rate_system_url = __url_root + "index.php?app=core&module=global&section=reputation&do=add_rating&app_rate=forums&type=pid&type_id=%d&rating=-1&secure_key=d86c744b27aa9b773279220e4185db34" # Возможно, придется получать программно
-__url_pre = __url_root + "topic/"
-__url_post = "/page__st__%d"
-__headers = requests.utils.default_headers()
-__headers.update({'User-Agent': ua.chrome})
-__user_name = "MaxLevs"
-__user_password = "635241ml"
-__login_url = __url_root + "index.php?app=core&module=global&section=login&do=process"
-__login_data = {
-	"auth_key" : "880ea6a14ea49e853634fbdc5015a024", # Возможно, придется получать программно
-	"referer" : __url_root,
-	"ips_username" : __user_name,
-	"ips_password" : __user_password,
-	"rememberMe" : "1"
-}
+config.__target_user_id = 48488
 
 def save_db(data_base):
 	with open("results.txt", "a") as db:
@@ -50,17 +32,17 @@ def read_url_list():
 
 def auth(a_url, a_data):
 	s = requests.Session()
-	s.post(a_url, a_data, headers=__headers)
+	s.post(a_url, a_data, headers=config.__headers)
 	return s
 
 def rate(session, post_id):
-	res = session.get(__rate_system_url % (int(post_id)), headers=__headers)
-	# print(res.status_code) # Временно
+	res = session.get(config.__rate_system_url % (int(post_id)), headers=config.__headers)
+	print(res.status_code) # Временно
 	return res
 
 
 url_list = read_url_list()
-auth_session = auth(__login_url, __login_data)
+auth_session = auth(config.__login_url, config.__login_data)
 data_base = []
 
 # rate(auth_session, 1153978)
@@ -70,7 +52,7 @@ for I in range(0, len(url_list)):
 	buff = ""
 	str_numb = 1
 	coutner = 0
-	common_url_template = __url_pre + url_list[I] + __url_post
+	common_url_template = config.__url_pre + url_list[I] + config.__url_post
 
 	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
 	print("Рабоатем с", url_list[I])
@@ -78,7 +60,7 @@ for I in range(0, len(url_list)):
 
 	while True:
 		common_url = common_url_template % (20 * (str_numb - 1))
-		response = requests.get(common_url, headers=__headers)
+		response = requests.get(common_url, headers=config.__headers)
 		soup = BeautifulSoup(response.text, "lxml")
 
 		posts = soup.find("div", {"id" : "ips_Posts"})
@@ -93,7 +75,7 @@ for I in range(0, len(url_list)):
 				if item.find("h3", {"class" : "guest"}):
 					continue
 				author_id = item.find("span", {"class" : "author"}).find("a").get("hovercard-id")
-				if int(author_id) == __target_user_id:
+				if int(author_id) == config.__target_user_id:
 					coutner += 1
 					post_id = item.get("id")
 					post_id = re.sub(r"post_id_", "", post_id)
