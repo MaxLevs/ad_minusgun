@@ -37,7 +37,7 @@ def auth(a_url, a_data):
 
 def rate(session, post_id):
 	res = session.get(config.__rate_system_url % (int(post_id)), headers=config.__headers)
-	print(res.status_code) # Временно
+	# print(res.status_code) # Временно
 	return res
 
 
