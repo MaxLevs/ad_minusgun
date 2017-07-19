@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+file_db = open("results.txt", "r")
+post_ids = file_db.read()
+file_db.close()
+post_ids = post_ids.split("\n")
+post_ids = post_ids[:-1]
+post_ids = map(lambda item: int(item), post_ids)
+post_ids = list(post_ids)
+post_ids.sort()
+post_ids = map(lambda item: str(item), post_ids)
+post_ids = list(post_ids)
+# post_ids = reversed(post_ids)
+# post_ids = list(post_ids)
+post_ids.append("")
+post_ids = "\n".join(post_ids)
+file_db = open("results.txt", "w")
+file_db.write(post_ids)
+file_db.close()
