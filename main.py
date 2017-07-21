@@ -6,20 +6,21 @@ import re
 import requests
 import time
 
+from os import path
 from bs4 import BeautifulSoup
 from lxml import html
 
 config.__target_user_id = 48488
 
 def save_db(data_base):
-	with open(__output_dir + "results.txt", "a") as db:
+	with open(path.join(config.__output_dir, "results.txt"), "a") as db:
 		for item in data_base:
 			db.write("%s\n" % item)
 		db.close()
 
 
 def read_url_list():
-	tread_list = open(__input_dir + "data.txt", "r")
+	tread_list = open(path.join(config.__input_dir, "data.txt"), "r")
 	url_list = []
 	for line in tread_list:
 		line = line[:-1] if line[-1] == "\n" else line
@@ -52,23 +53,24 @@ for I in range(0, len(url_list)):
 	buff = ""
 	str_numb = 1
 	coutner = 0
-	common_url_template = config.__url_pre + url_list[I] + config.__url_post
+	common_url_template = path.join(config.__url_pre, url_list[I], config.__url_post)
 
 	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength, redirect_stdout=True)
-	print("Рабоатем с", url_list[I])
 	bar.update(0)
+	print("Рабоатем с", url_list[I])
 
 	while True:
 		common_url = common_url_template % (20 * (str_numb - 1))
 		response = requests.get(common_url, headers=config.__headers)
 		soup = BeautifulSoup(response.text, "lxml")
 
-		posts = soup.find("div", {"id" : "ips_Posts"})
-		if posts == buff:
+		check_el = soup.find("div", {"class" : "pagination"})
+		if check_el == buff:
 			break
 
 		# Искать id
-		post_list = posts.find_all("div", {"class": "post_block"})
+		post_list = soup.find_all("div", {"class": "post_block"})
+		print(common_url)
 		listn = 1
 		for item in post_list:
 			try:
@@ -86,14 +88,16 @@ for I in range(0, len(url_list)):
 			finally:
 				listn += 1
 
-		buff = posts
+		buff = check_el
 		time.sleep(0.05)
 		bar.update(str_numb)
 		str_numb += 1
 	save_db(data_base)
 	data_base = []
-	print("\nГотово!", coutner, "\n")
+	print("Готово!", coutner, "\n")
 	del bar
+
+
 
 
 
