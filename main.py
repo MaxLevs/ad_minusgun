@@ -54,7 +54,7 @@ for I in range(0, len(url_list)):
 	coutner = 0
 	common_url_template = config.__url_pre + url_list[I] + config.__url_post
 
-	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
+	bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength, redirect_stdout=True)
 	print("Рабоатем с", url_list[I])
 	bar.update(0)
 
